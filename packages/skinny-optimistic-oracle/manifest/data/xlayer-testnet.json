@@ -1,0 +1,10 @@
+{
+  "network": "xlayer-testnet",
+  "SkinnyOptimisticOracleDataSources": [
+    {
+      "name": "SkinnyOptimisticOracle",
+      "address": "0x5db26500dB0b52972A1e187be75D939B82eC81b6",
+      "startBlock": 26667609
+    }
+  ]
+}

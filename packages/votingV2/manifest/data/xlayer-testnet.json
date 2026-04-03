@@ -1,0 +1,24 @@
+{
+  "network": "xlayer-testnet",
+  "votingTokenStartBlock": 26667616,
+  "votingTokenAddress": "0xf78f5e538B05974e41DAd1AEa653F933BAe864e5",
+  "identifierWhitelistAddress": "0x75c7d8505bd9AB4369355c499b6884619667C292",
+  "identifierWhitelistStartBlock": 26667588,
+  "registryAddress": "0x4268E11687EE5318CA0FBddD173D5Cbf0839cE12",
+  "registryStartBlock": 26667585,
+  "addressWhitelistAddress": "0x44d94B00ab4eE0b56C1CCea7c1A64BB1141De799",
+  "addressWhitelistStartBlock": 26667596,
+  "VotingDataSources": [
+    {
+      "name": "Voting",
+      "address": "0x7B272e11e08Ab1dd8ABe1a80D51157C85Aad8585",
+      "startBlock": 26667629
+    }
+  ],
+  "StoreDataSources": [
+    {
+      "address": "0x7D31fbd788Fbc3F869057D1EbcCFDbdbc8516B53",
+      "startBlock": 26667592
+    }
+  ]
+}
