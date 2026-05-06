@@ -121,17 +121,7 @@ jobs:
             echo "::group::Deploy $pkg → $NETWORK"
             pushd "packages/$pkg" >/dev/null
 
-            # votingV2's prepare script normally runs `npm run importAbi` which pulls
-            # ABIs from @uma/contracts-node (not installed here). The ABIs are
-            # committed to git, so build directly without that step.
-            if [ "$pkg" = "votingV2" ]; then
-              bash scripts/build-manifest.sh "$NETWORK"
-              yarn codegen
-              yarn build
-            else
-              yarn "prepare:$NETWORK"
-            fi
-
+            yarn "prepare:$NETWORK"
             yarn "deploy:$NETWORK"
 
             popd >/dev/null

@@ -13,7 +13,7 @@
     "prepare:kovan": "npm run importAbi && scripts/build-manifest.sh kovan && yarn codegen && yarn build",
     "prepare:polygon": "npm run importAbi && scripts/build-manifest.sh polygon && yarn codegen && yarn build",
     "prepare:sepolia": "scripts/build-manifest.sh sepolia && yarn codegen && yarn build",
-    "prepare:xlayer-testnet": "npm run importAbi && scripts/build-manifest.sh xlayer-testnet && yarn codegen && yarn build",
+    "prepare:xlayer-testnet": "scripts/build-manifest.sh xlayer-testnet && yarn codegen && yarn build",
     "deploy:xlayer-testnet": "env DOCKER=true scripts/deploy.sh xlayer-testnet",
     "deploy:kovan": "env STAGING=true scripts/deploy.sh kovan",
     "deploy:docker:goerli": "env STAGING=true DOCKER=true scripts/deploy.sh goerli",
