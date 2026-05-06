@@ -27,6 +27,8 @@
     "prepare:story-odyssey": "scripts/build-manifest.sh story-odyssey && yarn codegen && yarn build",
     "prepare:goldsky:blast": "scripts/build-manifest.sh blast-goldsky && yarn codegen && yarn build",
     "prepare:goldsky:story": "scripts/build-manifest.sh story && yarn codegen && yarn build",
+    "prepare:xlayer-testnet": "scripts/build-manifest.sh xlayer-testnet && yarn codegen && yarn build",
+    "deploy:xlayer-testnet": "env DOCKER=true scripts/deploy.sh xlayer-testnet",
     "deploy:mainnet": "env STAGING=true scripts/deploy.sh mainnet",
     "deploy:goerli": "env STAGING=true scripts/deploy.sh goerli",
     "deploy:polygon": "env STAGING=true scripts/deploy.sh polygon",

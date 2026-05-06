@@ -1,0 +1,172 @@
+name: Deploy UMA Subgraphs
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'packages/optimistic-oracle/**'
+      - 'packages/optimistic-oracle-v2/**'
+      - 'packages/optimistic-oracle-v3/**'
+      - 'packages/skinny-optimistic-oracle/**'
+      - 'packages/votingV2/**'
+      - 'scripts/deploy.sh'
+      - '.github/workflows/deploy-subgraphs.yml'
+  workflow_dispatch:
+    inputs:
+      network:
+        description: 'Target network'
+        type: choice
+        required: true
+        default: xlayer-testnet
+        options:
+          - xlayer-testnet
+          - xlayer-mainnet
+      subgraph:
+        description: 'Which subgraph to deploy (or "all")'
+        type: choice
+        required: true
+        default: all
+        options:
+          - all
+          - optimistic-oracle
+          - optimistic-oracle-v2
+          - optimistic-oracle-v3
+          - skinny-optimistic-oracle
+          - votingV2
+
+# Concurrency: only one deployment per (network, subgraph) at a time.
+concurrency:
+  group: deploy-${{ github.event.inputs.network || 'xlayer-testnet' }}-${{ github.event.inputs.subgraph || 'auto' }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: self-hosted
+    outputs:
+      network: ${{ steps.params.outputs.network }}
+      packages: ${{ steps.params.outputs.packages }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # need previous commit to detect changes on push
+
+      - name: Resolve target network and packages
+        id: params
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            NETWORK="${{ inputs.network }}"
+            SG="${{ inputs.subgraph }}"
+            if [ "$SG" = "all" ]; then
+              PKGS="optimistic-oracle optimistic-oracle-v2 optimistic-oracle-v3 skinny-optimistic-oracle votingV2"
+            else
+              PKGS="$SG"
+            fi
+          else
+            # Push event: testnet only, auto-detect changed packages.
+            NETWORK="xlayer-testnet"
+            CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
+            echo "Changed files:"
+            echo "$CHANGED_FILES"
+
+            # If any infra file changed, redeploy everything; otherwise only changed packages.
+            if echo "$CHANGED_FILES" | grep -qE '^(scripts/|\.github/workflows/)'; then
+              PKGS="optimistic-oracle optimistic-oracle-v2 optimistic-oracle-v3 skinny-optimistic-oracle votingV2"
+            else
+              PKGS=$(echo "$CHANGED_FILES" \
+                | grep -oP '^packages/\K(optimistic-oracle|optimistic-oracle-v2|optimistic-oracle-v3|skinny-optimistic-oracle|votingV2)(?=/)' \
+                | sort -u | tr '\n' ' ')
+            fi
+          fi
+
+          echo "Network: $NETWORK"
+          echo "Packages: $PKGS"
+          echo "network=$NETWORK" >> "$GITHUB_OUTPUT"
+          echo "packages=$PKGS" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: plan
+    if: needs.plan.outputs.packages != ''
+    runs-on: self-hosted
+    env:
+      GRAPH_NODE_URL: http://10.0.0.232:8020
+      IPFS_URL: http://10.0.0.114:5001
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Activate Node 20 (via nvm)
+        shell: bash
+        run: |
+          source "$HOME/.nvm/nvm.sh"
+          nvm use 20
+          # Persist PATH for subsequent steps.
+          echo "$NVM_DIR/versions/node/$(nvm version 20)/bin" >> "$GITHUB_PATH"
+          node --version
+
+      - name: yarn install
+        shell: bash
+        run: yarn install --frozen-lockfile
+
+      - name: Deploy ${{ needs.plan.outputs.packages }} to ${{ needs.plan.outputs.network }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          NETWORK="${{ needs.plan.outputs.network }}"
+          PACKAGES="${{ needs.plan.outputs.packages }}"
+
+          for pkg in $PACKAGES; do
+            echo "::group::Deploy $pkg → $NETWORK"
+            pushd "packages/$pkg" >/dev/null
+
+            # votingV2's prepare script normally runs `npm run importAbi` which pulls
+            # ABIs from @uma/contracts-node (not installed here). The ABIs are
+            # committed to git, so build directly without that step.
+            if [ "$pkg" = "votingV2" ]; then
+              bash scripts/build-manifest.sh "$NETWORK"
+              yarn codegen
+              yarn build
+            else
+              yarn "prepare:$NETWORK"
+            fi
+
+            yarn "deploy:$NETWORK"
+
+            popd >/dev/null
+            echo "::endgroup::"
+          done
+
+      - name: Verify indexing health
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          NETWORK="${{ needs.plan.outputs.network }}"
+          PACKAGES="${{ needs.plan.outputs.packages }}"
+
+          # Map package name to deployed subgraph name suffix.
+          declare -A SG_SUFFIX=(
+            [optimistic-oracle]=optimistic-oracle
+            [optimistic-oracle-v2]=optimistic-oracle-v2
+            [optimistic-oracle-v3]=optimistic-oracle-v3
+            [skinny-optimistic-oracle]=skinny-oo
+            [votingV2]=voting-v2
+          )
+
+          STATUS_URL="http://10.0.0.232:8030/graphql"
+
+          for pkg in $PACKAGES; do
+            SUFFIX="${SG_SUFFIX[$pkg]}"
+            FULL_NAME="umaprotocol/${NETWORK}-${SUFFIX}"
+            echo "Checking $FULL_NAME ..."
+            RESP=$(curl -fsS -X POST "$STATUS_URL" -H "Content-Type: application/json" \
+              -d "{\"query\":\"{ indexingStatusesForSubgraphName(subgraphName: \\\"$FULL_NAME\\\") { synced health fatalError { message } chains { earliestBlock { number } latestBlock { number } chainHeadBlock { number } } } }\"}")
+            echo "$RESP"
+            HEALTH=$(echo "$RESP" | python3 -c "import json,sys; d=json.load(sys.stdin)['data']['indexingStatusesForSubgraphName']; print(d[0]['health'] if d else 'NOT_FOUND')")
+            if [ "$HEALTH" != "healthy" ]; then
+              echo "::error::$FULL_NAME health=$HEALTH"
+              exit 1
+            fi
+          done

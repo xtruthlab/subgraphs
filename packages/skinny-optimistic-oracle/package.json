@@ -15,6 +15,8 @@
     "prepare:arbitrum": "scripts/build-manifest.sh arbitrum && yarn codegen && yarn build",
     "prepare:boba": "scripts/build-manifest.sh boba && yarn codegen && yarn build",
     "prepare:sepolia": "scripts/build-manifest.sh sepolia && yarn codegen && yarn build",
+    "prepare:xlayer-testnet": "scripts/build-manifest.sh xlayer-testnet && yarn codegen && yarn build",
+    "deploy:xlayer-testnet": "env DOCKER=true scripts/deploy.sh xlayer-testnet",
     "deploy:kovan": "env STAGING=true scripts/deploy.sh kovan",
     "deploy:mainnet": "env STAGING=true scripts/deploy.sh mainnet",
     "deploy:goerli": "env STAGING=true scripts/deploy.sh goerli",

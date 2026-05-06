@@ -1,5 +1,6 @@
 #!/bin/bash
-export $(cat ../../.env)
+# Tolerate a missing .env when deploying to a self-hosted graph-node (DOCKER mode).
+[ -f ../../.env ] && export $(cat ../../.env | xargs)
 
 NETWORK=$1
 SUBGRAPH_NAME=$SUBGRAPH_NAME
@@ -21,8 +22,8 @@ else
     API_KEY=$PROD_KEY
 fi
 
-# Require $GRAPHKEY to be set
-if [[ -z "${API_KEY}" ]]; then
+# Require $API_KEY for hosted/studio deploys, but skip for self-hosted DOCKER mode.
+if [[ -z "${API_KEY}" && -z "${DOCKER}" ]]; then
     echo >&2 "STAGING_KEY or PROD_KEY not defined in .env. This should be the access token for the $NAMESPACE graph namespace"
     exit 1
 fi
@@ -48,8 +49,13 @@ IPFS="${IPFS:-https://api.thegraph.com/ipfs/}"
 
 echo "$NAMESPACE/$SUBGRAPH_NAME"
 if [ "$DOCKER" ]; then
-    echo "Deploying to local docker node"
-    yarn graph create --node http://127.0.0.1:8020 $NAMESPACE/$SUBGRAPH_NAME && yarn graph deploy --node http://localhost:8020 --ipfs http://localhost:5001 $NAMESPACE/$SUBGRAPH_NAME
+    # Allow targeting a remote graph-node + IPFS via env vars (default to local).
+    GRAPH_NODE_URL="${GRAPH_NODE_URL:-http://127.0.0.1:8020}"
+    IPFS_URL="${IPFS_URL:-http://127.0.0.1:5001}"
+    echo "Deploying to docker graph-node at $GRAPH_NODE_URL (IPFS: $IPFS_URL)"
+    VERSION_LABEL="${VERSION_LABEL:-v0.0.1}"
+    yarn graph create --node "$GRAPH_NODE_URL" $NAMESPACE/$SUBGRAPH_NAME 2>&1 | grep -v 'already exists' || true
+    yarn graph deploy --node "$GRAPH_NODE_URL" --ipfs "$IPFS_URL" --version-label "$VERSION_LABEL" $NAMESPACE/$SUBGRAPH_NAME
 elif [ "$CREATE" ]; then
     echo "Creating and deploying on graph node"
     yarn graph create --node "$GRAPH_NODE" "$NAMESPACE/$SUBGRAPH_NAME" --access-token "$API_KEY" && yarn graph deploy --node "$GRAPH_NODE" --ipfs "$IPFS" "$NAMESPACE/$SUBGRAPH_NAME" --access-token "$API_KEY"
