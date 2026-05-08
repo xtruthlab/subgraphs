@@ -149,7 +149,7 @@ jobs:
 
           for pkg in $PACKAGES; do
             SUFFIX="${SG_SUFFIX[$pkg]}"
-            FULL_NAME="umaprotocol/${NETWORK}-${SUFFIX}"
+            FULL_NAME="xtruth/${NETWORK}-${SUFFIX}"
             echo "Checking $FULL_NAME ..."
             RESP=$(curl -fsS -X POST "$STATUS_URL" -H "Content-Type: application/json" \
               -d "{\"query\":\"{ indexingStatusesForSubgraphName(subgraphName: \\\"$FULL_NAME\\\") { synced health fatalError { message } chains { earliestBlock { number } latestBlock { number } chainHeadBlock { number } } } }\"}")

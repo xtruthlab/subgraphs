@@ -13,7 +13,10 @@ fi
 if [ "$STAGING" ]; then
     NAMESPACE=$STAGING_NAMESPACE
 else
-    NAMESPACE="umaprotocol"
+    # Self-hosted DOCKER deploys go under the xtruth namespace; the previous
+    # default (umaprotocol) was carried over from upstream and didn't match
+    # the project. Override with NAMESPACE=foo if you want something else.
+    NAMESPACE="${NAMESPACE:-xtruth}"
 fi
 
 if [ "$STAGING" ]; then
