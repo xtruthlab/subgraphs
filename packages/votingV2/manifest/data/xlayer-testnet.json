@@ -1,4 +1,5 @@
 {
+  "_note_StoreDataSources": "EMPTY ON PURPOSE. The Store template uses callHandlers (setFinalFee), which forces graph-node to require trace_filter. X Layer testnet RPCs (QuickNode + others) only expose debug_*, not trace_*. Leaving this empty makes mustache skip the Store data source so the subgraph compiles to event-only and graph-node will start it. See CLAUDE.md → Subgraph Deployment → trace_filter requirement, and scripts/build-manifest.sh (auto-stubs src/mappings/store.ts when this is empty). When deploying to xlayer-mainnet, FIRST verify trace_filter against that RPC before populating StoreDataSources.",
   "network": "xlayer-testnet",
   "votingTokenStartBlock": 26667616,
   "votingTokenAddress": "0xf78f5e538B05974e41DAd1AEa653F933BAe864e5",
