@@ -15,10 +15,5 @@
       "startBlock": 26667629
     }
   ],
-  "StoreDataSources": [
-    {
-      "address": "0x7D31fbd788Fbc3F869057D1EbcCFDbdbc8516B53",
-      "startBlock": 26667592
-    }
-  ]
+  "StoreDataSources": []
 }
