@@ -1,5 +1,6 @@
-import { CommittedVote, PriceRequestRound, RevealedVote } from "../../generated/schema";
+import { AdminSlash, CommittedVote, PriceRequestRound, RevealedVote } from "../../generated/schema";
 import {
+  AdminSlashed,
   ExecutedUnstake,
   RequestAdded,
   RequestDeleted,
@@ -556,6 +557,28 @@ export function handleRequestDeleted(event: RequestDeleted): void {
 
   request.isDeleted = true;
   request.save();
+}
+
+// event AdminSlashed(indexed address voter, indexed address recipient, uint128 amount,
+//                    uint128 fromActiveStake, uint128 fromPendingUnstake, bytes32 reasonHash)
+//
+// Owner-only emergency slash that bypasses the DVM. Tracked here as an
+// immutable AdminSlash entity so the xtruth admin page can read recent
+// events from the subgraph instead of paginating eth_getLogs against the
+// rate-limited xlayer testrpc.
+export function handleAdminSlashed(event: AdminSlashed): void {
+  let id = event.transaction.hash.toHexString() + "-" + event.logIndex.toString();
+  let entity = new AdminSlash(id);
+  entity.voter = event.params.voter;
+  entity.recipient = event.params.recipient;
+  entity.amount = event.params.amount;
+  entity.fromActiveStake = event.params.fromActiveStake;
+  entity.fromPendingUnstake = event.params.fromPendingUnstake;
+  entity.reasonHash = event.params.reasonHash;
+  entity.blockNumber = event.block.number;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
+  entity.save();
 }
 
 // event: RequestRolled(indexed bytes32,indexed uint256,bytes,uint256)

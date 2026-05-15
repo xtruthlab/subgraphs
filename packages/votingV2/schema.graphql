@@ -341,3 +341,36 @@ type FinancialContract @entity {
 
   registrationTimestamp: BigInt!
 }
+
+# xtruth-specific. Emitted by the owner-only adminSlash() on Staker/VotingV2;
+# lets the admin claw back stake (plus pendingUnstake) from a misbehaving
+# voter without going through the DVM. We index it raw (wei-level BigInts)
+# so the dapp can format consistently with on-chain getLogs output.
+type AdminSlash @entity(immutable: true) {
+  "transactionHash-logIndex"
+  id: ID!
+
+  "The voter whose stake was clawed back."
+  voter: Bytes!
+
+  "Recipient that received the clawed-back amount."
+  recipient: Bytes!
+
+  "Total amount slashed (wei). Equals fromActiveStake + fromPendingUnstake."
+  amount: BigInt!
+
+  "Portion drawn from the voter's active stake."
+  fromActiveStake: BigInt!
+
+  "Portion drawn from the voter's pendingUnstake (so cooldown can't dodge slashing)."
+  fromPendingUnstake: BigInt!
+
+  "Opaque hash committed by the admin describing why the slash happened."
+  reasonHash: Bytes!
+
+  blockNumber: BigInt!
+
+  blockTimestamp: BigInt!
+
+  transactionHash: Bytes!
+}
