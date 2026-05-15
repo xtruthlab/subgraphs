@@ -37,10 +37,9 @@
         handler: handleRequestedUnstake
       - event: ExecutedUnstake(indexed address,uint128,uint128)
         handler: handleExecutedUnstake
-      - event: UpdatedReward(indexed address,uint128,uint64)
-        handler: handleUpdatedReward
-      - event: WithdrawnRewards(indexed address,indexed address,uint128)
-        handler: handleWithdrawnRewards
+      # UpdatedReward / WithdrawnRewards were removed from xtruth's VotingV2
+      # fork along with the per-second emission model; their handlers were
+      # purged from src/mappings/votingV2.ts as part of the same change.
       - event: VoterSlashed(indexed address,indexed uint256,int128)
         handler: handleVoterSlashed
       - event: RequestDeleted(indexed bytes32,indexed uint256,bytes,uint32)

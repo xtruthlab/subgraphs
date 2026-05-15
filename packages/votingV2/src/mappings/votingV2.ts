@@ -8,12 +8,10 @@ import {
   RequestRolled,
   RequestedUnstake,
   Staked,
-  UpdatedReward,
   VoteCommitted,
   VoteRevealed,
   VoterSlashed,
   VotingV2,
-  WithdrawnRewards,
 } from "../../generated/Voting/VotingV2";
 import { BIGDECIMAL_HUNDRED, BIGDECIMAL_ONE, BIGDECIMAL_ZERO, BIGINT_ONE, BIGINT_ZERO } from "../utils/constants";
 import {
@@ -406,38 +404,11 @@ export function handleRequestedUnstake(event: RequestedUnstake): void {
   );
 }
 
-// event UpdatedReward(address indexed voter, uint256 newReward, uint256 lastUpdateTime);
-
-export function handleUpdatedReward(event: UpdatedReward): void {
-  let user = getOrCreateUser(event.params.voter);
-  let global = getOrCreateGlobals();
-  let votingContract = VotingV2.bind(event.address);
-  let voterStake = votingContract.try_voterStakes(event.params.voter);
-  let nextIndexToProcessChain = voterStake.value.value5;
-
-  user.nextIndexToProcess = nextIndexToProcessChain;
-
-  if (nextIndexToProcessChain.gt(global.maxNextIndexToProcess)) {
-    // This value can be compared to the users' nextIndexToProcess to see if the users'
-    // trackers are up to date. This is also demonstrated by the user.cumulativeSlash versus
-    // user.cumulativeCalculatedSlash comparison; if they differ, the user's trackers are out of date.
-    // It should be noted that user.cumulativeCalculatedSlash is always updated for all users.
-    global.maxNextIndexToProcess = nextIndexToProcessChain;
-    global.save();
-  }
-
-  user.save();
-}
-
-// event WithdrawnRewards(address indexed voter, address indexed delegate, uint256 tokensWithdrawn);
-
-export function handleWithdrawnRewards(event: WithdrawnRewards): void {
-  let user = getOrCreateUser(event.params.voter);
-
-  user.withdrawnRewards = defaultBigDecimal(user.withdrawnRewards).plus(toDecimal(event.params.tokensWithdrawn));
-
-  user.save();
-}
+// `handleUpdatedReward` / `handleWithdrawnRewards` were removed when the
+// xtruth fork dropped the per-second emission model — those events no
+// longer exist on VotingV2, so the manifest entries and these handler
+// bodies were purged together. `User.withdrawnRewards` is preserved as a
+// schema field for backwards compat with older clients but will stay 0.
 
 // VoterSlashed(indexed address,indexed uint256,int256)
 // event VoterSlashed(address indexed voter, uint256 indexed requestIndex, int256 slashedTokens);

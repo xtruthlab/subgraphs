@@ -1,4 +1,5 @@
 export {
+  handleAdminSlashed,
   handleVoteRevealed,
   handleVoteCommitted,
   handlePriceRequestAdded,
@@ -6,8 +7,6 @@ export {
   handleStaked,
   handleRequestedUnstake,
   handleExecutedUnstake,
-  handleUpdatedReward,
-  handleWithdrawnRewards,
   handleVoterSlashed,
   handleRequestDeleted,
   handleRequestRolled,
