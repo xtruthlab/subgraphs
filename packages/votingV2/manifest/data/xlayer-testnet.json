@@ -1,14 +1,15 @@
 {
   "_note_StoreDataSources": "EMPTY ON PURPOSE. The Store template uses callHandlers (setFinalFee), which forces graph-node to require trace_filter. X Layer testnet RPCs (QuickNode + others) only expose debug_*, not trace_*. Leaving this empty makes mustache skip the Store data source so the subgraph compiles to event-only and graph-node will start it. See CLAUDE.md → Subgraph Deployment → trace_filter requirement, and scripts/build-manifest.sh (auto-stubs src/mappings/store.ts when this is empty). When deploying to xlayer-mainnet, FIRST verify trace_filter against that RPC before populating StoreDataSources.",
   "network": "xlayer-testnet",
-  "votingTokenStartBlock": 26667616,
+  "_note_startBlocks": "Bumped to 30364000 (just before new VotingV2 at 30364163) to skip ~3.7M empty blocks. The slow xlayer testrpc made graph-node crawl at ~3 blocks/sec from the original (26.6M) startBlocks. The dapp's votingV2 subgraph queries only use Voting-source-derived entities (globals/users); historical registry/whitelist data isn't needed.",
+  "votingTokenStartBlock": 30364000,
   "votingTokenAddress": "0xf78f5e538B05974e41DAd1AEa653F933BAe864e5",
   "identifierWhitelistAddress": "0x75c7d8505bd9AB4369355c499b6884619667C292",
-  "identifierWhitelistStartBlock": 26667588,
+  "identifierWhitelistStartBlock": 30364000,
   "registryAddress": "0x4268E11687EE5318CA0FBddD173D5Cbf0839cE12",
-  "registryStartBlock": 26667585,
+  "registryStartBlock": 30364000,
   "addressWhitelistAddress": "0x44d94B00ab4eE0b56C1CCea7c1A64BB1141De799",
-  "addressWhitelistStartBlock": 26667596,
+  "addressWhitelistStartBlock": 30364000,
   "VotingDataSources": [
     {
       "name": "Voting",
