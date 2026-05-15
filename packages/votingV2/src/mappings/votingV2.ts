@@ -362,14 +362,11 @@ export function handleStaked(event: Staked): void {
   user.save();
   global.save();
 
-  let votingContract = VotingV2.bind(event.address);
-  let emissionRate = votingContract.try_emissionRate();
-
-  updateAprs(
-    global.userAddresses,
-    emissionRate.reverted ? BigInt.fromI32(0) : emissionRate.value,
-    global.cumulativeStake
-  );
+  // emissionRate() was removed alongside the per-second emission model;
+  // there is no rewards stream to derive APR from anymore. Keep
+  // updateAprs() invoked with 0 so dependent entities (Global, User) still
+  // get their derived `annualPercentageReturn` fields written (as 0).
+  updateAprs(global.userAddresses, BigInt.fromI32(0), global.cumulativeStake);
 }
 
 // RequestedUnstake(address indexed voter, uint256 amount, uint256 unstakeTime, uint256 voterStake);
@@ -394,14 +391,8 @@ export function handleRequestedUnstake(event: RequestedUnstake): void {
   user.save();
   global.save();
 
-  let votingContract = VotingV2.bind(event.address);
-  let emissionRate = votingContract.try_emissionRate();
-
-  updateAprs(
-    global.userAddresses,
-    emissionRate.reverted ? BigInt.fromI32(0) : emissionRate.value,
-    global.cumulativeStake
-  );
+  // emissionRate() removed — see comment in handleStaked.
+  updateAprs(global.userAddresses, BigInt.fromI32(0), global.cumulativeStake);
 }
 
 // `handleUpdatedReward` / `handleWithdrawnRewards` were removed when the
