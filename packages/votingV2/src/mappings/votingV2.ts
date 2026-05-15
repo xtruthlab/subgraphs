@@ -59,22 +59,28 @@ export function handlePriceRequestAdded(event: RequestAdded): void {
   let request = getOrCreatePriceRequest(requestId);
   let requestRound = getOrCreatePriceRequestRound(requestId.concat("-").concat(event.params.roundId.toString()));
 
-  request.identifier = event.params.identifier.toString();
+  // Always ensure the referenced PriceIdentifier entity exists. Originally
+  // this only ran for governance requests on the assumption that the
+  // IdentifierWhitelist data source had already materialised the entity for
+  // every other identifier — but our subgraph deploys with a raised
+  // identifierWhitelistStartBlock to skip slow historical scans, so
+  // identifiers registered before that block (ASSERT_TRUTH, etc.) have no
+  // PriceIdentifier entity. The FK on request.identifier / requestRound.identifier
+  // then dangled, failing every query that walked through them ("Null value
+  // resolved for non-null field identifier").
+  let identifier = getOrCreatePriceIdentifier(event.params.identifier.toString());
+  identifier.isSupported = true;
+  identifier.save();
+
+  request.identifier = identifier.id;
   request.requestTransaction = event.transaction.hash;
   request.latestRound = requestRound.id;
   request.time = event.params.time;
   request.ancillaryData = event.params.ancillaryData.toHex();
   request.isGovernance = event.params.isGovernance;
 
-  // If governance request we manually create an identifier as it doesn't exist on chain
-  if (event.params.isGovernance) {
-    let identifier = getOrCreatePriceIdentifier(event.params.identifier.toString());
-    identifier.isSupported = true;
-    identifier.save();
-  }
-
   requestRound.request = request.id;
-  requestRound.identifier = event.params.identifier.toString();
+  requestRound.identifier = identifier.id;
   requestRound.time = event.params.time;
   requestRound.roundId = event.params.roundId;
 
@@ -146,8 +152,13 @@ export function handlePriceResolved(event: RequestResolved): void {
 
   voterGroup.won = true;
 
+  // Defensive ensure-create. See note in handlePriceRequestAdded.
+  let priceIdentifier = getOrCreatePriceIdentifier(event.params.identifier.toString());
+  priceIdentifier.isSupported = true;
+  priceIdentifier.save();
+
   requestRound.request = request.id;
-  requestRound.identifier = event.params.identifier.toString();
+  requestRound.identifier = priceIdentifier.id;
   requestRound.time = event.params.time;
   requestRound.roundId = event.params.roundId;
   requestRound.winnerGroup = voterGroup.id;
@@ -204,18 +215,31 @@ export function handleVoteCommitted(event: VoteCommitted): void {
 
   const _previousNumTokens = vote.numTokens; // defaults to 0 if first commit
 
+  // Ensure the referenced PriceIdentifier entity actually exists. The
+  // IdentifierWhitelist data source skips over historical SupportedIdentifierAdded
+  // events that happened before its (raised) startBlock, so any identifier
+  // registered earlier (e.g. ASSERT_TRUTH from initial setup-dvmv2-testnet) has
+  // no entity — leaving CommittedVote.identifier as a dangling FK that fails
+  // GraphQL queries with "Null value resolved for non-null field".
+  let priceIdentifier = getOrCreatePriceIdentifier(event.params.identifier.toString());
+  // VotingV2 only lets a vote commit happen against an Active price request, which
+  // requires the identifier to be on the whitelist right now — so isSupported is
+  // safely true here.
+  priceIdentifier.isSupported = true;
+  priceIdentifier.save();
+
   vote.voter = voter.id;
   vote.request = requestId;
-  vote.identifier = event.params.identifier.toString();
+  vote.identifier = priceIdentifier.id;
   vote.time = event.params.time;
   vote.round = requestRound.id;
   vote.numTokens = voterTokensCommitted; // this is an estimate until reveal phase
 
   requestRound.request = requestId;
-  requestRound.identifier = event.params.identifier.toString();
+  requestRound.identifier = priceIdentifier.id;
   requestRound.time = event.params.time;
   requestRound.roundId = event.params.roundId;
-  // Update the round’s total committed tokens: first undo the voter’s **previous** commit (if any), then add the 
+  // Update the round’s total committed tokens: first undo the voter’s **previous** commit (if any), then add the
   // **new** stake snapshot.
   // Remember this value is still **only an estimate** until the reveal phase, because the voter could increase their 
   // stake by claiming rewards before commit phase ends. This is why we need to update the value on reveal.
@@ -275,10 +299,15 @@ export function handleVoteRevealed(event: VoteRevealed): void {
     committedVote.save();
   }
 
+  // Defensive ensure-create (see handlePriceRequestAdded for rationale).
+  let priceIdentifier = getOrCreatePriceIdentifier(event.params.identifier.toString());
+  priceIdentifier.isSupported = true;
+  priceIdentifier.save();
+
   vote.voter = voter.id;
   vote.round = requestRound.id;
   vote.request = requestId;
-  vote.identifier = event.params.identifier.toString();
+  vote.identifier = priceIdentifier.id;
   vote.time = event.params.time;
   vote.price = event.params.price;
   vote.numTokens = event.params.numTokens;
@@ -292,7 +321,7 @@ export function handleVoteRevealed(event: VoteRevealed): void {
   voterGroup.votersAmount = voterGroup.votersAmount.plus(BIGDECIMAL_ONE);
 
   requestRound.request = requestId;
-  requestRound.identifier = event.params.identifier.toString();
+  requestRound.identifier = priceIdentifier.id;
   requestRound.time = event.params.time;
   requestRound.roundId = event.params.roundId;
   // The amount stored at commit time was just an estimate—voters can still claim their rewards before the commit phase
