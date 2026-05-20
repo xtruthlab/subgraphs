@@ -1,20 +1,20 @@
 {
   "_note_StoreDataSources": "EMPTY ON PURPOSE. The Store template uses callHandlers (setFinalFee), which forces graph-node to require trace_filter. X Layer testnet RPCs (QuickNode + others) only expose debug_*, not trace_*. Leaving this empty makes mustache skip the Store data source so the subgraph compiles to event-only and graph-node will start it. See CLAUDE.md → Subgraph Deployment → trace_filter requirement, and scripts/build-manifest.sh (auto-stubs src/mappings/store.ts when this is empty). When deploying to xlayer-mainnet, FIRST verify trace_filter against that RPC before populating StoreDataSources.",
   "network": "xlayer-testnet",
-  "_note_startBlocks": "Bumped to 30364000 (just before new VotingV2 at 30364163) to skip ~3.7M empty blocks. The slow xlayer testrpc made graph-node crawl at ~3 blocks/sec from the original (26.6M) startBlocks. The dapp's votingV2 subgraph queries only use Voting-source-derived entities (globals/users); historical registry/whitelist data isn't needed.",
-  "votingTokenStartBlock": 30364000,
-  "votingTokenAddress": "0xf78f5e538B05974e41DAd1AEa653F933BAe864e5",
-  "identifierWhitelistAddress": "0x75c7d8505bd9AB4369355c499b6884619667C292",
-  "identifierWhitelistStartBlock": 30364000,
-  "registryAddress": "0x4268E11687EE5318CA0FBddD173D5Cbf0839cE12",
-  "registryStartBlock": 30364000,
-  "addressWhitelistAddress": "0x44d94B00ab4eE0b56C1CCea7c1A64BB1141De799",
-  "addressWhitelistStartBlock": 30364000,
+  "_note_startBlocks": "Repointed 2026-05-20 to the CANONICAL UMA deployment (XTR voting token, fresh stake-weighted DVM). Earliest canonical contract is Registry at 30790341; all support data sources start there (a few empty blocks before each one's actual deploy is harmless). Voting (VotingV2) starts at its own deploy block 30790396. Previous fork addresses (VotingV2 0x2570…, token 0xf78f…) are abandoned. The dapp's votingV2 subgraph queries only use Voting-source-derived entities (globals/users); historical registry/whitelist data isn't needed.",
+  "votingTokenStartBlock": 30790341,
+  "votingTokenAddress": "0x44B706e1d8b6883677c7c92DC386d96c9B5650F3",
+  "identifierWhitelistAddress": "0xC322cbcE4501C9a6d643f37Fd543F2551cDF46CC",
+  "identifierWhitelistStartBlock": 30790341,
+  "registryAddress": "0x10c01D10a7b81De1f36096cdB4085d7195f046CB",
+  "registryStartBlock": 30790341,
+  "addressWhitelistAddress": "0xF2709Af88507cA0b08B28b042144E0481f820edb",
+  "addressWhitelistStartBlock": 30790341,
   "VotingDataSources": [
     {
       "name": "Voting",
-      "address": "0x2570287b42322490EBb1AC70A097C8e7D5eBc53d",
-      "startBlock": 30460837
+      "address": "0xAB332A31bFA83f24CF5415f8443C32C6F7788a9E",
+      "startBlock": 30790396
     }
   ],
   "StoreDataSources": []

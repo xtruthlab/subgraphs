@@ -3,8 +3,8 @@
   "OptimisticOracleV2DataSources": [
     {
       "name": "OptimisticOracleV2",
-      "address": "0x3f230650D345D4f86F7c35E70fa474E96ff292d6",
-      "startBlock": 26667613
+      "address": "0xeF3e851F7BdfaC5491B562b90D8bc5209524a7C2",
+      "startBlock": 30790372
     }
   ]
 }

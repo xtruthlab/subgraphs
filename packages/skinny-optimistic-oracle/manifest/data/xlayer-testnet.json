@@ -3,8 +3,8 @@
   "SkinnyOptimisticOracleDataSources": [
     {
       "name": "SkinnyOptimisticOracle",
-      "address": "0x5db26500dB0b52972A1e187be75D939B82eC81b6",
-      "startBlock": 26667609
+      "address": "0xDe85590Fc9782f430CFBe6F5fD9a52C44877596B",
+      "startBlock": 30790367
     }
   ]
 }
