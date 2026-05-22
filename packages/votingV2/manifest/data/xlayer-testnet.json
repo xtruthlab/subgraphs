@@ -1,20 +1,20 @@
 {
   "_note_StoreDataSources": "EMPTY ON PURPOSE. The Store template uses callHandlers (setFinalFee), which forces graph-node to require trace_filter. X Layer testnet RPCs (QuickNode + others) only expose debug_*, not trace_*. Leaving this empty makes mustache skip the Store data source so the subgraph compiles to event-only and graph-node will start it. See CLAUDE.md → Subgraph Deployment → trace_filter requirement, and scripts/build-manifest.sh (auto-stubs src/mappings/store.ts when this is empty). When deploying to xlayer-mainnet, FIRST verify trace_filter against that RPC before populating StoreDataSources.",
   "network": "xlayer-testnet",
-  "_note_startBlocks": "Repointed 2026-05-20 to the CANONICAL UMA deployment (XTR voting token, fresh stake-weighted DVM). Earliest canonical contract is Registry at 30790341; all support data sources start there (a few empty blocks before each one's actual deploy is harmless). Voting (VotingV2) starts at its own deploy block 30790396. Previous fork addresses (VotingV2 0x2570…, token 0xf78f…) are abandoned. The dapp's votingV2 subgraph queries only use Voting-source-derived entities (globals/users); historical registry/whitelist data isn't needed.",
-  "votingTokenStartBlock": 30790341,
+  "_note_startBlocks": "Bumped 2026-05-22 from the canonical deploy blocks (~30790341) to a RECENT block (30977000). Reason: graph-node's chain store for xlayer-testnet has a stale/poisoned block at 30790340 (hash cb29e0c9…) that no longer matches the current QuickNode chain (which returns 2ab4f7… at that height — a testnet reorg/resync or load-balanced backend divergence). A fresh deployment starting in that old range fails: 'Ethereum node did not find block 0xcb29…' because graph-node anchors on the cached hash the RPC can't serve. oov3 is unaffected (it's at chain head, where blocks are consistent). Starting votingV2 near head avoids the poisoned range entirely. Trade-off: historical votingV2 events (pre-30977000, incl. the e2e stake) are not indexed — irrelevant on this testnet (no real votes yet; the dapp reads live stake via RPC). To index full history, fix the RPC (single archive backend) or `graphman chain truncate xlayer-testnet`, then lower these back to ~30790341.",
+  "votingTokenStartBlock": 30977000,
   "votingTokenAddress": "0x44B706e1d8b6883677c7c92DC386d96c9B5650F3",
   "identifierWhitelistAddress": "0xC322cbcE4501C9a6d643f37Fd543F2551cDF46CC",
-  "identifierWhitelistStartBlock": 30790341,
+  "identifierWhitelistStartBlock": 30977000,
   "registryAddress": "0x10c01D10a7b81De1f36096cdB4085d7195f046CB",
-  "registryStartBlock": 30790341,
+  "registryStartBlock": 30977000,
   "addressWhitelistAddress": "0xF2709Af88507cA0b08B28b042144E0481f820edb",
-  "addressWhitelistStartBlock": 30790341,
+  "addressWhitelistStartBlock": 30977000,
   "VotingDataSources": [
     {
       "name": "Voting",
       "address": "0xAB332A31bFA83f24CF5415f8443C32C6F7788a9E",
-      "startBlock": 30790396
+      "startBlock": 30977000
     }
   ],
   "StoreDataSources": []
