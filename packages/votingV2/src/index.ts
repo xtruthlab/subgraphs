@@ -1,5 +1,5 @@
 export {
-  handleAdminSlashed,
+  handleWithdrawnRewards,
   handleVoteRevealed,
   handleVoteCommitted,
   handlePriceRequestAdded,

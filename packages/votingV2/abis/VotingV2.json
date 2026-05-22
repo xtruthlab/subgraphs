@@ -2,6 +2,11 @@
   {
     "inputs": [
       {
+        "internalType": "uint128",
+        "name": "_emissionRate",
+        "type": "uint128"
+      },
+      {
         "internalType": "uint64",
         "name": "_unstakeCoolDown",
         "type": "uint64"
@@ -54,49 +59,6 @@
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "voter",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "recipient",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint128",
-        "name": "amount",
-        "type": "uint128"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint128",
-        "name": "fromActiveStake",
-        "type": "uint128"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint128",
-        "name": "fromPendingUnstake",
-        "type": "uint128"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "reasonHash",
-        "type": "bytes32"
-      }
-    ],
-    "name": "AdminSlashed",
-    "type": "event"
   },
   {
     "anonymous": false,
@@ -452,6 +414,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "uint128",
+        "name": "newEmissionRate",
+        "type": "uint128"
+      }
+    ],
+    "name": "SetNewEmissionRate",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "uint64",
         "name": "newUnstakeCoolDown",
         "type": "uint64"
@@ -514,6 +489,31 @@
       }
     ],
     "name": "Staked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint128",
+        "name": "newReward",
+        "type": "uint128"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "lastUpdateTime",
+        "type": "uint64"
+      }
+    ],
+    "name": "UpdatedReward",
     "type": "event"
   },
   {
@@ -678,6 +678,31 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "delegate",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint128",
+        "name": "tokensWithdrawn",
+        "type": "uint128"
+      }
+    ],
+    "name": "WithdrawnRewards",
+    "type": "event"
+  },
+  {
     "inputs": [],
     "name": "ANCILLARY_BYTES_LIMIT",
     "outputs": [
@@ -701,34 +726,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "voter",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "recipient",
-        "type": "address"
-      },
-      {
-        "internalType": "uint128",
-        "name": "amount",
-        "type": "uint128"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "reasonHash",
-        "type": "bytes32"
-      }
-    ],
-    "name": "adminSlash",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -832,6 +829,19 @@
         "internalType": "address",
         "name": "",
         "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "emissionRate",
+    "outputs": [
+      {
+        "internalType": "uint128",
+        "name": "",
+        "type": "uint128"
       }
     ],
     "stateMutability": "view",
@@ -1288,6 +1298,19 @@
   },
   {
     "inputs": [],
+    "name": "lastUpdateTime",
+    "outputs": [
+      {
+        "internalType": "uint64",
+        "name": "",
+        "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "maxRequestsPerRound",
     "outputs": [
       {
@@ -1352,6 +1375,25 @@
         "internalType": "uint64",
         "name": "",
         "type": "uint64"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "voter",
+        "type": "address"
+      }
+    ],
+    "name": "outstandingRewards",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -1695,6 +1737,32 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "rewardPerToken",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "rewardPerTokenStored",
+    "outputs": [
+      {
+        "internalType": "uint128",
+        "name": "",
+        "type": "uint128"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -1755,6 +1823,19 @@
       }
     ],
     "name": "setDelegator",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint128",
+        "name": "newEmissionRate",
+        "type": "uint128"
+      }
+    ],
+    "name": "setEmissionRate",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1990,6 +2071,16 @@
         "type": "uint128"
       },
       {
+        "internalType": "uint128",
+        "name": "rewardsPaidPerToken",
+        "type": "uint128"
+      },
+      {
+        "internalType": "uint128",
+        "name": "outstandingRewards",
+        "type": "uint128"
+      },
+      {
         "internalType": "int128",
         "name": "unappliedSlash",
         "type": "int128"
@@ -2024,6 +2115,32 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdrawAndRestake",
+    "outputs": [
+      {
+        "internalType": "uint128",
+        "name": "",
+        "type": "uint128"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdrawRewards",
+    "outputs": [
+      {
+        "internalType": "uint128",
+        "name": "",
+        "type": "uint128"
+      }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

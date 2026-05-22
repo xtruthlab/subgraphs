@@ -1,6 +1,5 @@
-import { AdminSlash, CommittedVote, PriceRequestRound, RevealedVote } from "../../generated/schema";
+import { CommittedVote, PriceRequestRound, RevealedVote } from "../../generated/schema";
 import {
-  AdminSlashed,
   ExecutedUnstake,
   RequestAdded,
   RequestDeleted,
@@ -12,6 +11,7 @@ import {
   VoteRevealed,
   VoterSlashed,
   VotingV2,
+  WithdrawnRewards,
 } from "../../generated/Voting/VotingV2";
 import { BIGDECIMAL_HUNDRED, BIGDECIMAL_ONE, BIGDECIMAL_ZERO, BIGINT_ONE, BIGINT_ZERO } from "../utils/constants";
 import {
@@ -438,7 +438,15 @@ export function handleVoterSlashed(event: VoterSlashed): void {
   let user = getOrCreateUser(event.params.voter);
   let votingContract = VotingV2.bind(event.address);
   let priceRequestId = votingContract.try_resolvedPriceRequestIds(event.params.requestIndex);
+  // Guard the chained call: if the first eth_call reverts, priceRequestId.value
+  // is a zero default and the second call would read garbage. Bail out.
+  if (priceRequestId.reverted) {
+    return;
+  }
   let priceRequest = votingContract.try_priceRequests(priceRequestId.value);
+  if (priceRequest.reverted) {
+    return;
+  }
 
   user.cumulativeSlash = defaultBigDecimal(user.cumulativeSlash).plus(toDecimal(event.params.slashedTokens));
   user.cumulativeCalculatedSlash = user.cumulativeSlash;
@@ -550,26 +558,16 @@ export function handleRequestDeleted(event: RequestDeleted): void {
   request.save();
 }
 
-// event AdminSlashed(indexed address voter, indexed address recipient, uint128 amount,
-//                    uint128 fromActiveStake, uint128 fromPendingUnstake, bytes32 reasonHash)
+// event WithdrawnRewards(address indexed voter, address indexed delegate, uint128 tokensWithdrawn);
 //
-// Owner-only emergency slash that bypasses the DVM. Tracked here as an
-// immutable AdminSlash entity so the xtruth admin page can read recent
-// events from the subgraph instead of paginating eth_getLogs against the
-// rate-limited xlayer testrpc.
-export function handleAdminSlashed(event: AdminSlashed): void {
-  let id = event.transaction.hash.toHexString() + "-" + event.logIndex.toString();
-  let entity = new AdminSlash(id);
-  entity.voter = event.params.voter;
-  entity.recipient = event.params.recipient;
-  entity.amount = event.params.amount;
-  entity.fromActiveStake = event.params.fromActiveStake;
-  entity.fromPendingUnstake = event.params.fromPendingUnstake;
-  entity.reasonHash = event.params.reasonHash;
-  entity.blockNumber = event.block.number;
-  entity.blockTimestamp = event.block.timestamp;
-  entity.transactionHash = event.transaction.hash;
-  entity.save();
+// Canonical UMA emission: a voter (or their delegate) claimed accrued XTR
+// rewards via withdrawRewards(). Event-only (no eth_call), so it never stalls
+// historical indexing. Populates User.withdrawnRewards (which stayed 0 on the
+// fork, where emission was removed). Restored 2026-05-21 for canonical.
+export function handleWithdrawnRewards(event: WithdrawnRewards): void {
+  let user = getOrCreateUser(event.params.voter);
+  user.withdrawnRewards = defaultBigDecimal(user.withdrawnRewards).plus(toDecimal(event.params.tokensWithdrawn));
+  user.save();
 }
 
 // event: RequestRolled(indexed bytes32,indexed uint256,bytes,uint256)

@@ -37,16 +37,19 @@
         handler: handleRequestedUnstake
       - event: ExecutedUnstake(indexed address,uint128,uint128)
         handler: handleExecutedUnstake
-      # UpdatedReward / WithdrawnRewards were removed from xtruth's VotingV2
-      # fork along with the per-second emission model; their handlers were
-      # purged from src/mappings/votingV2.ts as part of the same change.
+      # Canonical UMA emission: WithdrawnRewards is restored (event-only,
+      # populates User.withdrawnRewards). UpdatedReward is intentionally NOT
+      # subscribed — its only effect was tracking nextIndexToProcess, which
+      # requires a voterStakes() eth_call; on a non-archive RPC that historical
+      # call backoff-stalls the whole subgraph (see oov3 vs votingV2). Restore
+      # it once graph-node points at an archive RPC.
+      - event: WithdrawnRewards(indexed address,indexed address,uint128)
+        handler: handleWithdrawnRewards
       - event: VoterSlashed(indexed address,indexed uint256,int128)
         handler: handleVoterSlashed
       - event: RequestDeleted(indexed bytes32,indexed uint256,bytes,uint32)
         handler: handleRequestDeleted
       - event: RequestRolled(indexed bytes32,indexed uint256,bytes,uint32)
         handler: handleRequestRolled
-      - event: AdminSlashed(indexed address,indexed address,uint128,uint128,uint128,bytes32)
-        handler: handleAdminSlashed
 
 
