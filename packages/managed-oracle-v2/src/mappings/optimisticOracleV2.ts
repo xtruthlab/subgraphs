@@ -1,6 +1,5 @@
 import {
   DisputePrice,
-  ManagedOracleV2,
   ProposePrice,
   RequestPrice,
   SetBondCall,
@@ -8,11 +7,10 @@ import {
   SetEventBasedCall,
   Settle,
 } from "../../generated/ManagedOracleV2/ManagedOracleV2";
-import { ManagedOracleV2Legacy } from "../../generated/ManagedOracleV2/ManagedOracleV2Legacy";
 import { createOptimisticPriceRequestId, getManagedRequestId, getOrCreateOptimisticPriceRequest } from "../utils/helpers";
 import { CustomBond, CustomLiveness } from "../../generated/schema";
 
-import { Address, BigInt, Bytes, dataSource, log } from "@graphprotocol/graph-ts";
+import { Address, Bytes, log } from "@graphprotocol/graph-ts";
 import { createCustomBondId } from "../utils/helpers/managedOracleV2";
 
 /**
@@ -42,30 +40,13 @@ function getCustomLiveness(requester: Address, identifier: Bytes, ancillaryData:
   return customLivenessEntity ? customLivenessEntity : null;
 }
 
-function getState(
-  ooAddress: Address,
-  requester: Address,
-  identifier: Bytes,
-  timestamp: BigInt,
-  ancillaryData: Bytes
-): string {
-  const states = [
-    "Invalid", // Never requested.
-    "Requested", // Requested, no other actions taken.
-    "Proposed", // Proposed, but not expired or disputed yet.
-    "Expired", // Proposed, not disputed, past liveness.
-    "Disputed", // Disputed, but no DVM price returned yet.
-    "Resolved", // Disputed and DVM price is available.
-    "Settled", // Final price has been set in the contract (can get here from Expired or Resolved).
-  ];
-  let oov2 = ManagedOracleV2.bind(ooAddress);
-  let state = oov2.try_getState(requester, identifier, timestamp, ancillaryData);
-  if (state.reverted) {
-    log.warning("getState call reverted, returning Invalid state", []);
-    return states[0]; // Return "Invalid" if the call fails
-  }
-  return states[state.value];
-}
+// NOTE: This subgraph is EVENT-ONLY. The X Layer RPC rejects historical
+// eth_call with `{"code":-32000,"message":"not supported"}` (no archive
+// state), and graph-node executes every mapping contract call against the
+// block being indexed. Any `.bind(...).getX()` / `try_getX()` therefore fails
+// (it's an RPC transport error, NOT a revert, so `try_` does NOT save you) and
+// freezes the subgraph at the first event's block. So we derive request state
+// from the event semantics and never call getState()/getRequest().
 
 // - event: RequestPrice(indexed address,bytes32,uint256,bytes,address,uint256,uint256)
 //   handler: handleOptimisticRequestPrice
@@ -80,10 +61,6 @@ function getState(
 //   );
 
 export function handleOptimisticRequestPrice(event: RequestPrice): void {
-  let network = dataSource.network();
-  let isMainnet = network == "mainnet";
-  let isGoerli = network == "goerli";
-
   log.warning(`(ancillary) OOV2 PriceRequest params: {},{},{}`, [
     event.params.timestamp.toString(),
     event.params.identifier.toString(),
@@ -109,51 +86,13 @@ export function handleOptimisticRequestPrice(event: RequestPrice): void {
   request.requestLogIndex = event.logIndex;
   request.requestHash = event.transaction.hash;
 
-  request.state = getState(
-    event.address,
-    event.params.requester,
-    event.params.identifier,
-    event.params.timestamp,
-    event.params.ancillaryData
-  );
-
-  // workaround for L2 chains that don't support `callHandlers`
-  // see readme for more info
-  if (!isMainnet && !isGoerli) {
-    let oov2 = ManagedOracleV2.bind(event.address);
-    let result = oov2.try_getRequest(
-      event.params.requester,
-      event.params.identifier,
-      event.params.timestamp,
-      event.params.ancillaryData
-    );
-
-    if (!result.reverted) {
-      // New ABI succeeded
-      let requestSettings = result.value.requestSettings;
-      request.bond = requestSettings.bond;
-      request.eventBased = requestSettings.eventBased;
-      request.customLiveness = requestSettings.customLiveness;
-    } else {
-      // Try legacy ABI (for contracts not yet upgraded)
-      let oov2Legacy = ManagedOracleV2Legacy.bind(event.address);
-      let legacyResult = oov2Legacy.try_getRequest(
-        event.params.requester,
-        event.params.identifier,
-        event.params.timestamp,
-        event.params.ancillaryData
-      );
-
-      if (!legacyResult.reverted) {
-        let requestSettings = legacyResult.value.requestSettings;
-        request.bond = requestSettings.bond;
-        request.eventBased = requestSettings.eventBased;
-        request.customLiveness = requestSettings.customLiveness;
-      } else {
-        log.warning("Both new and legacy getRequest calls failed for request {}", [requestId]);
-      }
-    }
-  }
+  // Event-only (see note on the removed getState helper). At request time the
+  // contract sets bond = finalFee, so use the event's finalFee as the default
+  // proposer/disputer bond. A manager custom bond/liveness (looked up from
+  // indexed CustomBondSet/CustomLivenessSet events below) overrides this.
+  request.state = "Requested";
+  request.bond = event.params.finalFee;
+  request.eventBased = false;
 
   // Look up custom bond and liveness values that may have been set before the request
   // Custom bonds are stored with a unique ID that includes the currency, so we only find
@@ -223,13 +162,7 @@ export function handleOptimisticProposePrice(event: ProposePrice): void {
   request.proposalLogIndex = event.logIndex;
   request.proposalHash = event.transaction.hash;
 
-  request.state = getState(
-    event.address,
-    event.params.requester,
-    event.params.identifier,
-    event.params.timestamp,
-    event.params.ancillaryData
-  );
+  request.state = "Proposed"; // event-only
 
   // Look up custom bond and liveness values that may have been set before the request
   // Custom bonds are stored with a unique ID that includes the currency, so we only find
@@ -296,13 +229,7 @@ export function handleOptimisticDisputePrice(event: DisputePrice): void {
   request.disputeLogIndex = event.logIndex;
   request.disputeHash = event.transaction.hash;
 
-  request.state = getState(
-    event.address,
-    event.params.requester,
-    event.params.identifier,
-    event.params.timestamp,
-    event.params.ancillaryData
-  );
+  request.state = "Disputed"; // event-only
 
   request.save();
 }
@@ -348,13 +275,7 @@ export function handleOptimisticSettle(event: Settle): void {
   request.settlementLogIndex = event.logIndex;
   request.settlementHash = event.transaction.hash;
 
-  request.state = getState(
-    event.address,
-    event.params.requester,
-    event.params.identifier,
-    event.params.timestamp,
-    event.params.ancillaryData
-  );
+  request.state = "Settled"; // event-only
 
   request.save();
 }
