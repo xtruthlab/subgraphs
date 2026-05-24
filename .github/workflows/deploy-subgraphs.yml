@@ -9,6 +9,7 @@ on:
       - 'packages/optimistic-oracle-v3/**'
       - 'packages/skinny-optimistic-oracle/**'
       - 'packages/votingV2/**'
+      - 'packages/managed-oracle-v2/**'
       - 'scripts/deploy.sh'
       - '.github/workflows/deploy-subgraphs.yml'
   workflow_dispatch:
@@ -33,6 +34,7 @@ on:
           - optimistic-oracle-v3
           - skinny-optimistic-oracle
           - votingV2
+          - managed-oracle-v2
 
 # Concurrency: only one deployment per (network, subgraph) at a time.
 concurrency:
@@ -60,7 +62,7 @@ jobs:
             NETWORK="${{ inputs.network }}"
             SG="${{ inputs.subgraph }}"
             if [ "$SG" = "all" ]; then
-              PKGS="optimistic-oracle optimistic-oracle-v2 optimistic-oracle-v3 skinny-optimistic-oracle votingV2"
+              PKGS="optimistic-oracle optimistic-oracle-v2 optimistic-oracle-v3 skinny-optimistic-oracle votingV2 managed-oracle-v2"
             else
               PKGS="$SG"
             fi
@@ -73,10 +75,10 @@ jobs:
 
             # If any infra file changed, redeploy everything; otherwise only changed packages.
             if echo "$CHANGED_FILES" | grep -qE '^(scripts/|\.github/workflows/)'; then
-              PKGS="optimistic-oracle optimistic-oracle-v2 optimistic-oracle-v3 skinny-optimistic-oracle votingV2"
+              PKGS="optimistic-oracle optimistic-oracle-v2 optimistic-oracle-v3 skinny-optimistic-oracle votingV2 managed-oracle-v2"
             else
               PKGS=$(echo "$CHANGED_FILES" \
-                | grep -oP '^packages/\K(optimistic-oracle|optimistic-oracle-v2|optimistic-oracle-v3|skinny-optimistic-oracle|votingV2)(?=/)' \
+                | grep -oP '^packages/\K(optimistic-oracle|optimistic-oracle-v2|optimistic-oracle-v3|skinny-optimistic-oracle|votingV2|managed-oracle-v2)(?=/)' \
                 | sort -u | tr '\n' ' ')
             fi
           fi
@@ -143,6 +145,7 @@ jobs:
             [optimistic-oracle-v3]=optimistic-oracle-v3
             [skinny-optimistic-oracle]=skinny-oo
             [votingV2]=voting-v2
+            [managed-oracle-v2]=managed-optimistic-oracle-v2
           )
 
           STATUS_URL="http://10.0.0.232:8030/graphql"

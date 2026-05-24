@@ -10,6 +10,8 @@
     "prepare:polygon": "scripts/build-manifest.sh polygon && yarn remove-call-handlers && yarn codegen && yarn build",
     "prepare-ci": "scripts/build-manifest.sh polygon && yarn remove-call-handlers && yarn codegen && yarn build",
     "prepare:amoy": "scripts/build-manifest.sh amoy && yarn remove-call-handlers && yarn codegen && yarn build",
+    "prepare:xlayer-testnet": "scripts/build-manifest.sh xlayer-testnet && yarn remove-call-handlers && yarn codegen && yarn build",
+    "deploy:xlayer-testnet": "env DOCKER=true scripts/deploy.sh xlayer-testnet",
     "deploy:polygon": "env STAGING=true scripts/deploy.sh polygon",
     "deploy-prod:polygon": "env STUDIO=true scripts/deploy.sh polygon",
     "deploy:amoy": "env STAGING=true scripts/deploy.sh amoy",
