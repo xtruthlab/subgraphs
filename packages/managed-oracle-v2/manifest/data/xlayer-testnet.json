@@ -1,11 +1,11 @@
 {
-  "_note_startBlock": "MOOv2 proxy deployed ~30790xxx (in the chain-store-poisoned range, see votingV2 note). MOOv2 has no usage yet (proposer/requester whitelist empty, zero requests), so we start near head (30977000) to anchor in the consistent freshly-ingested range and avoid the 'Ethereum node did not find block' stall. No historical data is lost. Lower this once the RPC chain store is fixed if past events ever matter.",
+  "_note_startBlock": "MOOv2 proxy deployed ~30790xxx. The 30977000 deployment stalled at 30990019 (paused/unassigned at the node — votingV2 synced past that same range fine, so it's not chain-store poison). First real MOOv2 usage (requestPrice/proposePrice from the whitelisted deployer) landed at blocks 31153900 / 31153956. Re-anchored to 31153800 — a fresh content hash that escapes the stalled deployment and indexes from just before the first request. No historical data is lost (the contract had zero requests before this).",
   "network": "xlayer-testnet",
   "ManagedOracleV2DataSources": [
     {
       "name": "ManagedOracleV2",
       "address": "0x88f80d0cd78b8d014032c8862dce1b91662330d8",
-      "startBlock": 30977000
+      "startBlock": 31153800
     }
   ]
 }
