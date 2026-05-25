@@ -30,7 +30,9 @@
     "deploy-prod:boba": "scripts/deploy.sh boba",
     "deploy-prod:optimism": "scripts/deploy.sh optimism",
     "deploy-prod:arbitrum": "scripts/deploy.sh arbitrum",
-    "deploy:all-prod": "yarn prepare:mainnet && yarn deploy-prod:mainnet && yarn prepare:polygon && yarn deploy-prod:polygon && yarn prepare:optimism && yarn deploy-prod:optimism && yarn prepare:arbitrum && yarn deploy-prod:arbitrum && yarn prepare:boba && yarn deploy-prod:boba"
+    "deploy:all-prod": "yarn prepare:mainnet && yarn deploy-prod:mainnet && yarn prepare:polygon && yarn deploy-prod:polygon && yarn prepare:optimism && yarn deploy-prod:optimism && yarn prepare:arbitrum && yarn deploy-prod:arbitrum && yarn prepare:boba && yarn deploy-prod:boba",
+    "prepare:xlayer-mainnet": "scripts/build-manifest.sh xlayer-mainnet && yarn codegen && yarn build",
+    "deploy:xlayer-mainnet": "env DOCKER=true scripts/deploy.sh xlayer-mainnet"
   },
   "repository": {
     "type": "git",

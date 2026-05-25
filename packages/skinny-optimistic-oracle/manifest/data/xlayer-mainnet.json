@@ -1,0 +1,11 @@
+{
+  "network": "xlayer-mainnet",
+  "SkinnyOptimisticOracleDataSources": [
+    {
+      "name": "SkinnyOptimisticOracle",
+      "address": "0x0000000000000000000000000000000000000000",
+      "startBlock": 0
+    }
+  ],
+  "_note_placeholder": "PLACEHOLDER for X Layer mainnet (196). Addresses=0x0 / startBlock=0 until the mainnet deploy; protocol scripts/sync-deployed-addresses.js fills them. For votingV2: verify trace_filter on the mainnet RPC before populating StoreDataSources (kept [])."
+}

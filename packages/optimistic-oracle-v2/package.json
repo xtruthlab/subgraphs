@@ -60,7 +60,9 @@
     "deploy-prod:goldsky:arbitrum": "env GOLDSKY=true scripts/deploy.sh arbitrum",
     "deploy-prod:goldsky:base": "env GOLDSKY=true scripts/deploy.sh base",
     "deploy-prod:goldsky:blast": "env GOLDSKY=true scripts/deploy.sh blast-goldsky",
-    "deploy-prod:goldsky:story": "env GOLDSKY=true scripts/deploy.sh story"
+    "deploy-prod:goldsky:story": "env GOLDSKY=true scripts/deploy.sh story",
+    "prepare:xlayer-mainnet": "scripts/build-manifest.sh xlayer-mainnet && yarn remove-call-handlers && yarn codegen && yarn build",
+    "deploy:xlayer-mainnet": "env DOCKER=true scripts/deploy.sh xlayer-mainnet"
   },
   "repository": {
     "type": "git",
