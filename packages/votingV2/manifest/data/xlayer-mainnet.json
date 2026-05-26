@@ -2,19 +2,19 @@
   "_note_StoreDataSources": "EMPTY ON PURPOSE. The Store template uses callHandlers (setFinalFee), which forces graph-node to require trace_filter. X Layer testnet RPCs (QuickNode + others) only expose debug_*, not trace_*. Leaving this empty makes mustache skip the Store data source so the subgraph compiles to event-only and graph-node will start it. See CLAUDE.md → Subgraph Deployment → trace_filter requirement, and scripts/build-manifest.sh (auto-stubs src/mappings/store.ts when this is empty). When deploying to xlayer-mainnet, FIRST verify trace_filter against that RPC before populating StoreDataSources.",
   "network": "xlayer-mainnet",
   "_note_startBlocks": "Bumped 2026-05-22 from the canonical deploy blocks (~30790341) to a RECENT block (30977000). Reason: graph-node's chain store for xlayer-testnet has a stale/poisoned block at 30790340 (hash cb29e0c9…) that no longer matches the current QuickNode chain (which returns 2ab4f7… at that height — a testnet reorg/resync or load-balanced backend divergence). A fresh deployment starting in that old range fails: 'Ethereum node did not find block 0xcb29…' because graph-node anchors on the cached hash the RPC can't serve. oov3 is unaffected (it's at chain head, where blocks are consistent). Starting votingV2 near head avoids the poisoned range entirely. Trade-off: historical votingV2 events (pre-30977000, incl. the e2e stake) are not indexed — irrelevant on this testnet (no real votes yet; the dapp reads live stake via RPC). To index full history, fix the RPC (single archive backend) or `graphman chain truncate xlayer-testnet`, then lower these back to ~30790341.",
-  "votingTokenStartBlock": 0,
-  "votingTokenAddress": "0x0000000000000000000000000000000000000000",
-  "identifierWhitelistAddress": "0x0000000000000000000000000000000000000000",
-  "identifierWhitelistStartBlock": 0,
-  "registryAddress": "0x0000000000000000000000000000000000000000",
-  "registryStartBlock": 0,
-  "addressWhitelistAddress": "0x0000000000000000000000000000000000000000",
-  "addressWhitelistStartBlock": 0,
+  "votingTokenStartBlock": 60998835,
+  "votingTokenAddress": "0x1819672530c65e1eF3a3f62fA8e6722655225a78",
+  "identifierWhitelistAddress": "0x2E651F03d658aE9a3796A2cc4b67C6E6dfe2ae44",
+  "identifierWhitelistStartBlock": 60998802,
+  "registryAddress": "0xd21E2D7E7B6Ef31bbfE1793692466b0B2043a842",
+  "registryStartBlock": 60998798,
+  "addressWhitelistAddress": "0x278371F3aaC71669092Df46B4421c8b736f71f93",
+  "addressWhitelistStartBlock": 60998811,
   "VotingDataSources": [
     {
       "name": "Voting",
-      "address": "0x0000000000000000000000000000000000000000",
-      "startBlock": 0
+      "address": "0x382Fa88A4c0a340e89F96Fc54C2282B8Ad4BA000",
+      "startBlock": 60998854
     }
   ],
   "StoreDataSources": [],

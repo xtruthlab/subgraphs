@@ -3,8 +3,8 @@
   "OptimisticOracleV3DataSources": [
     {
       "name": "OptimisticOracleV3",
-      "address": "0x0000000000000000000000000000000000000000",
-      "startBlock": 0
+      "address": "0xAC238D4B79b112264a46fC46538D595fD43f73c8",
+      "startBlock": 61003050
     }
   ],
   "_note_placeholder": "PLACEHOLDER for X Layer mainnet (196). Addresses=0x0 / startBlock=0 until the mainnet deploy; protocol scripts/sync-deployed-addresses.js fills them. For votingV2: verify trace_filter on the mainnet RPC before populating StoreDataSources (kept [])."

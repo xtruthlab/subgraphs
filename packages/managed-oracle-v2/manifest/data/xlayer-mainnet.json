@@ -4,8 +4,8 @@
   "ManagedOracleV2DataSources": [
     {
       "name": "ManagedOracleV2",
-      "address": "0x0000000000000000000000000000000000000000",
-      "startBlock": 0
+      "address": "0xde9472548e9d92f019c86e243386a57c36d28ae1",
+      "startBlock": 61003939
     }
   ],
   "_note_placeholder": "PLACEHOLDER for X Layer mainnet (196). Addresses=0x0 / startBlock=0 until the mainnet deploy; protocol scripts/sync-deployed-addresses.js fills them. For votingV2: verify trace_filter on the mainnet RPC before populating StoreDataSources (kept [])."
