@@ -27,7 +27,9 @@
     "deploy-prod:goldsky:mainnet": "env GOLDSKY=true scripts/deploy.sh mainnet",
     "deploy-prod:goldsky:sepolia": "env GOLDSKY=true scripts/deploy.sh sepolia",
     "prepare:xlayer-mainnet": "scripts/build-manifest.sh xlayer-mainnet && yarn codegen && yarn build",
-    "deploy:xlayer-mainnet": "env DOCKER=true scripts/deploy.sh xlayer-mainnet"
+    "deploy:xlayer-mainnet": "env DOCKER=true scripts/deploy.sh xlayer-mainnet",
+    "prepare:xlayer-mainnet-test": "scripts/build-manifest.sh xlayer-mainnet-test && yarn codegen && yarn build",
+    "deploy:xlayer-mainnet-test": "env DOCKER=true scripts/deploy.sh xlayer-mainnet-test"
   },
   "repository": {
     "type": "git",
