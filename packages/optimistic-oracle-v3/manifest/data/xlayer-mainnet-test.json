@@ -1,0 +1,11 @@
+{
+  "_note": "TEST-MAINNET set (chainId 196 test deploy, app-dev/admin-test only). Filename `xlayer-mainnet-test` → deploy name xtruth/xlayer-mainnet-test-optimistic-oracle-v3. `network` stays `xlayer-mainnet` (same chain 196, only addresses differ). Does NOT touch the real xlayer-mainnet-* subgraphs.",
+  "network": "xlayer-mainnet",
+  "OptimisticOracleV3DataSources": [
+    {
+      "name": "OptimisticOracleV3",
+      "address": "0x72339804416E9A791E791EB4b902abcEb75AC6c7",
+      "startBlock": 63002243
+    }
+  ]
+}

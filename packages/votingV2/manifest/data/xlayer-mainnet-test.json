@@ -1,0 +1,22 @@
+{
+  "_note": "TEST-MAINNET set (chainId 196 test deploy, app-dev/admin-test only). Filename `xlayer-mainnet-test` → deploy name xtruth/xlayer-mainnet-test-voting-v2. `network` stays `xlayer-mainnet` (same chain 196, only addresses differ). Does NOT touch the real xlayer-mainnet-* subgraphs.",
+  "_note_StoreDataSources": "EMPTY like the real xlayer-mainnet set: the Store template uses callHandlers (setFinalFee) which forces graph-node to require trace_filter, not available on the X Layer RPC. build-manifest.sh auto-stubs src/mappings/store.ts when this is empty so AS compiles event-only. setFinalFee indexing is lost (xtruth dapp doesn't use it).",
+  "_note_identifierWhitelist": "Reuses the PROD identifierWhitelist (0x2E651…, same as the real mainnet set, per the frontend contracts decision). Indexed from its real deploy block (60998802) so the supported-identifier list is captured; the rest of the test deploy starts in the 6300xxxx batch.",
+  "network": "xlayer-mainnet",
+  "votingTokenStartBlock": 63000000,
+  "votingTokenAddress": "0x819a8DB6489E6A1993520C813E44dddCe99fe472",
+  "identifierWhitelistStartBlock": 60998802,
+  "identifierWhitelistAddress": "0x2E651F03d658aE9a3796A2cc4b67C6E6dfe2ae44",
+  "registryStartBlock": 63000000,
+  "registryAddress": "0x57a953783E3ec989908DCa9458F9B04a17393382",
+  "addressWhitelistStartBlock": 63000000,
+  "addressWhitelistAddress": "0xF89c66b52fDE8E2CA0d426F765E4cf5Ec89169a9",
+  "VotingDataSources": [
+    {
+      "name": "Voting",
+      "address": "0x2d0AE6D81B219C31c8583c1341812f21F04e4C70",
+      "startBlock": 63001079
+    }
+  ],
+  "StoreDataSources": []
+}

@@ -62,7 +62,9 @@
     "deploy-prod:goldsky:blast": "env GOLDSKY=true scripts/deploy.sh blast-goldsky",
     "deploy-prod:goldsky:story": "env GOLDSKY=true scripts/deploy.sh story",
     "prepare:xlayer-mainnet": "scripts/build-manifest.sh xlayer-mainnet && yarn remove-call-handlers && yarn codegen && yarn build",
-    "deploy:xlayer-mainnet": "env DOCKER=true scripts/deploy.sh xlayer-mainnet"
+    "deploy:xlayer-mainnet": "env DOCKER=true scripts/deploy.sh xlayer-mainnet",
+    "prepare:xlayer-mainnet-test": "scripts/build-manifest.sh xlayer-mainnet-test && yarn remove-call-handlers && yarn codegen && yarn build",
+    "deploy:xlayer-mainnet-test": "env DOCKER=true scripts/deploy.sh xlayer-mainnet-test"
   },
   "repository": {
     "type": "git",
