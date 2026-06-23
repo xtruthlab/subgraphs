@@ -1,12 +1,12 @@
 {
   "_note": "TEST-MAINNET set (chainId 196 test deploy, app-dev/admin-test only). Filename `xlayer-mainnet-test` → deploy name xtruth/xlayer-mainnet-test-voting-v2. `network` stays `xlayer-mainnet` (same chain 196, only addresses differ). Does NOT touch the real xlayer-mainnet-* subgraphs.",
   "_note_StoreDataSources": "EMPTY like the real xlayer-mainnet set: the Store template uses callHandlers (setFinalFee) which forces graph-node to require trace_filter, not available on the X Layer RPC. build-manifest.sh auto-stubs src/mappings/store.ts when this is empty so AS compiles event-only. setFinalFee indexing is lost (xtruth dapp doesn't use it).",
-  "_note_identifierWhitelist": "Reuses the PROD identifierWhitelist (0x2E651…, same as the real mainnet set, per the frontend contracts decision). Indexed from its real deploy block (60998802) so the supported-identifier list is captured; the rest of the test deploy starts in the 6300xxxx batch.",
+  "_note_redeploy": "2026-06-23: test-mainnet DVM redeployed. VotingV2 (Finder['Oracle']) 0x2d0AE6→0x4Ea96f @63429787, and the test stack now has its OWN IdentifierWhitelist (Finder['IdentifierWhitelist'] 0x8ffe7Ca @63001056) instead of reusing the prod one — both verified on-chain via the test Finder 0xb050. votingToken/registry/addressWhitelist unchanged.",
   "network": "xlayer-mainnet",
   "votingTokenStartBlock": 63000000,
   "votingTokenAddress": "0x819a8DB6489E6A1993520C813E44dddCe99fe472",
-  "identifierWhitelistStartBlock": 60998802,
-  "identifierWhitelistAddress": "0x2E651F03d658aE9a3796A2cc4b67C6E6dfe2ae44",
+  "identifierWhitelistStartBlock": 63001056,
+  "identifierWhitelistAddress": "0x8ffe7Ca93b577707ca3834c732562ee43cF005D5",
   "registryStartBlock": 63000000,
   "registryAddress": "0x57a953783E3ec989908DCa9458F9B04a17393382",
   "addressWhitelistStartBlock": 63000000,
@@ -14,8 +14,8 @@
   "VotingDataSources": [
     {
       "name": "Voting",
-      "address": "0x2d0AE6D81B219C31c8583c1341812f21F04e4C70",
-      "startBlock": 63001079
+      "address": "0x4Ea96f47f7C14FF605A6bB3AF5B979d4A0C5aA76",
+      "startBlock": 63429787
     }
   ],
   "StoreDataSources": []

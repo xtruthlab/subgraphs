@@ -1,11 +1,12 @@
 {
   "_note": "TEST-MAINNET set. Separate UMA deploy on X Layer mainnet (chainId 196), used by app-dev / admin-test only. Filename `xlayer-mainnet-test` → deploy name xtruth/xlayer-mainnet-test-managed-optimistic-oracle-v2. `network` stays `xlayer-mainnet` because it indexes the SAME chain (196) as the real mainnet — only the contract addresses differ. Does NOT touch the real `xlayer-mainnet-*` subgraphs.",
+  "_note_redeploy": "2026-06-23: test-mainnet MOOv2 proxy redeployed 0xf99991c8→0x923baea0 @63430294 (deploy block found via archive RPC; proxy has bytecode on-chain).",
   "network": "xlayer-mainnet",
   "ManagedOracleV2DataSources": [
     {
       "name": "ManagedOracleV2",
-      "address": "0xf99991c8896919bb00208e58ba78a56f171ebd7d",
-      "startBlock": 63002627
+      "address": "0x923baea00b0ff479d6b6e753f4cec1b21c3f7580",
+      "startBlock": 63430294
     }
   ]
 }
