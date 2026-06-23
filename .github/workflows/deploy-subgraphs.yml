@@ -22,6 +22,11 @@ on:
         options:
           - xlayer-testnet
           - xlayer-mainnet
+          # test-mainnet = the chainId-196 TEST deploy (app-dev / api-test).
+          # Only oov2/oov3/votingV2/managed-oracle-v2 have a data file for it —
+          # dispatch those individually, NOT "all" (the others have no
+          # xlayer-mainnet-test data and would fail prepare).
+          - xlayer-mainnet-test
       subgraph:
         description: 'Which subgraph to deploy (or "all")'
         type: choice
